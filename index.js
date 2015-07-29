@@ -6,12 +6,13 @@ var incrementer = require('dead-simple-incrementer');
 module.exports = function(opts) {
   opts = opts || {};
 
-  var getNextId = opts.nextId || incrementer().next;
-  var responseTimeout = opts.timeout || 30 * 1000;
+  var nextId = opts.nextId || incrementer().next;
+  var timeout = opts.timeout || 30 * 1000;
 
   var stream = new Duplex();
   var outgoingRequestQueue = [];
   var responseListeners = {};
+  var timeouts = {};
 
   var flushOutgoingRequestQueue = function() {
     var json;
@@ -35,7 +36,7 @@ module.exports = function(opts) {
     }
 
     if (typeof fn === 'function') {
-      return new Request(getNextId(), method, params);
+      return new Request(nextId(), method, params);
     }
 
     return new Notification(method, params);
@@ -45,16 +46,22 @@ module.exports = function(opts) {
     if (responseListeners[response.id]) {
       responseListeners[response.id].call(null, response.error || null, response.result);
       delete responseListeners[response.id];
+      cancelTimeout(response.id);
     }
   };
 
-  var startResponseTimeoutCountdown = function(request) {
-    setTimeout(function() {
+  var startTimeout = function(responseId) {
+    timeouts[responseId] = setTimeout(function() {
       handleResponse({
-        id: request.id,
+        id: responseId,
         error: new Error('Server timeout')
-      })
-    }, responseTimeout);
+      });
+    }, timeout);
+  };
+
+  var cancelTimeout = function(responseId) {
+    clearTimeout(timeouts[responseId]);
+    delete timeouts[responseId];
   };
 
   stream.emitter = {
@@ -66,7 +73,7 @@ module.exports = function(opts) {
         callback = fn || params;
         responseListeners[request.id] = callback;
 
-        startResponseTimeoutCountdown(request);
+        startTimeout(request.id);
       }
 
       outgoingRequestQueue.push(request);
