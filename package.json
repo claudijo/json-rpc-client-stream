@@ -35,6 +35,7 @@
   },
   "dependencies": {
     "dead-simple-incrementer": "^1.0.0",
+    "json-rpc-error": "^2.0.0",
     "json-rpc-notification": "^1.0.1",
     "json-rpc-request": "^1.0.1"
   }

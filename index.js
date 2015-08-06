@@ -1,6 +1,7 @@
 var Duplex = require('stream').Duplex;
 var Notification = require('json-rpc-notification');
 var Request = require('json-rpc-request');
+var JsonRpcError = require('json-rpc-error');
 var incrementer = require('dead-simple-incrementer');
 
 module.exports = function(opts) {
@@ -50,11 +51,11 @@ module.exports = function(opts) {
     }
   };
 
-  var startTimeout = function(responseId) {
-    timeouts[responseId] = setTimeout(function() {
+  var startTimeout = function(request) {
+    timeouts[request.id] = setTimeout(function() {
       handleResponse({
-        id: responseId,
-        error: new Error('Server timeout')
+        id: request.id,
+        error: new JsonRpcError('Response timeout', -3199, request)
       });
     }, timeout);
   };
@@ -73,7 +74,7 @@ module.exports = function(opts) {
         callback = fn || params;
         responseListeners[request.id] = callback;
 
-        startTimeout(request.id);
+        startTimeout(request);
       }
 
       outgoingRequestQueue.push(request);
