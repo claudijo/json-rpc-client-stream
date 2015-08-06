@@ -64,7 +64,7 @@ module.exports = function(opts) {
     delete timeouts[responseId];
   };
 
-  stream.emitter = {
+  stream.rpc = {
     emit: function(method, params, fn) {
       var request = createRequest.apply(null, arguments);
       var callback;

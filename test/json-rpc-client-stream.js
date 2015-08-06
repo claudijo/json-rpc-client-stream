@@ -41,7 +41,7 @@ describe('JSON RPC 2.0 client stream', function() {
         done();
       };
 
-      jsonRpcClient.emitter.emit('foobar');
+      jsonRpcClient.rpc.emit('foobar');
     });
 
     it('should stream notification with params', function(done) {
@@ -55,7 +55,7 @@ describe('JSON RPC 2.0 client stream', function() {
         done();
       };
 
-      jsonRpcClient.emitter.emit('update', [1, 2, 3, 4, 5]);
+      jsonRpcClient.rpc.emit('update', [1, 2, 3, 4, 5]);
     });
 
     it('should stream request without params', function(done) {
@@ -69,7 +69,7 @@ describe('JSON RPC 2.0 client stream', function() {
         done();
       };
 
-      jsonRpcClient.emitter.emit('foobar', function(err, result) {});
+      jsonRpcClient.rpc.emit('foobar', function(err, result) {});
     });
 
     it('should stream concurrent requests as batch', function(done) {
@@ -89,8 +89,8 @@ describe('JSON RPC 2.0 client stream', function() {
         done();
       };
 
-      jsonRpcClient.emitter.emit('foo', function(err, result) {});
-      jsonRpcClient.emitter.emit('bar', function(err, result) {});
+      jsonRpcClient.rpc.emit('foo', function(err, result) {});
+      jsonRpcClient.rpc.emit('bar', function(err, result) {});
     });
 
     it('should invoke callback with result on valid request with params', function(done) {
@@ -98,7 +98,7 @@ describe('JSON RPC 2.0 client stream', function() {
         duplex.push('{"jsonrpc": "2.0", "result": 3, "id": 1}');
       };
 
-      jsonRpcClient.emitter.emit('add', [1, 2], function(err, result) {
+      jsonRpcClient.rpc.emit('add', [1, 2], function(err, result) {
         expect(err).to.be(null);
         expect(result).to.be(3);
         done();
@@ -110,7 +110,7 @@ describe('JSON RPC 2.0 client stream', function() {
         duplex.push('{"jsonrpc": "2.0", "result": "pong", "id": 1}');
       };
 
-      jsonRpcClient.emitter.emit('ping', function(err, result) {
+      jsonRpcClient.rpc.emit('ping', function(err, result) {
         expect(err).to.be(null);
         expect(result).to.be('pong');
         done();
@@ -122,7 +122,7 @@ describe('JSON RPC 2.0 client stream', function() {
         duplex.push('{"jsonrpc": "2.0", "error": {"code": -32601, "message": "Method not found"}, "id": 1}');
       };
 
-      jsonRpcClient.emitter.emit('foo', [1, 2], function(err, result) {
+      jsonRpcClient.rpc.emit('foo', [1, 2], function(err, result) {
         expect(err).to.eql({
           code: -32601,
           message: 'Method not found'
@@ -138,7 +138,7 @@ describe('JSON RPC 2.0 client stream', function() {
         duplex.push('[{"jsonrpc": "2.0", "result": 3, "id": 1},{"jsonrpc": "2.0", "result": "pong", "id": 2},{"jsonrpc": "2.0", "error": {"code": -32601, "message": "Method not found"}, "id": 3}]');
       };
 
-      jsonRpcClient.emitter.emit('add', [1, 2], function(err, result) {
+      jsonRpcClient.rpc.emit('add', [1, 2], function(err, result) {
         expect(err).to.be(null);
         expect(result).to.be(3);
 
@@ -148,7 +148,7 @@ describe('JSON RPC 2.0 client stream', function() {
         }
       });
 
-      jsonRpcClient.emitter.emit('ping', function(err, result) {
+      jsonRpcClient.rpc.emit('ping', function(err, result) {
         expect(err).to.be(null);
         expect(result).to.be('pong');
 
@@ -158,7 +158,7 @@ describe('JSON RPC 2.0 client stream', function() {
         }
       });
 
-      jsonRpcClient.emitter.emit('foo', [1, 2], function(err, result) {
+      jsonRpcClient.rpc.emit('foo', [1, 2], function(err, result) {
         expect(err).to.eql({
           code: -32601,
           message: 'Method not found'
@@ -181,13 +181,13 @@ describe('JSON RPC 2.0 client stream', function() {
         done();
       });
 
-      jsonRpcClient.emitter.emit('add', [1, 2], function(err, result) {});
+      jsonRpcClient.rpc.emit('add', [1, 2], function(err, result) {});
     });
 
     it('should timeout callback with error if server does not respond', function(done) {
       duplex._write = function(chunk, encoding, callback) {};
 
-      jsonRpcClient.emitter.emit('add', [1, 2], function(err, result) {
+      jsonRpcClient.rpc.emit('add', [1, 2], function(err, result) {
         expect(err).to.be.an(Error);
         done();
       });
@@ -214,7 +214,7 @@ describe('JSON RPC 2.0 client stream', function() {
     it('should alter timeout', function(done) {
       duplex._write = function(chunk, encoding, callback) {};
 
-      jsonRpcClient.emitter.emit('add', [1, 2], function(err, result) {
+      jsonRpcClient.rpc.emit('add', [1, 2], function(err, result) {
         expect(err).to.be.an(Error);
         done();
       });
@@ -233,7 +233,7 @@ describe('JSON RPC 2.0 client stream', function() {
         done();
       };
 
-      jsonRpcClient.emitter.emit('foobar', function(err, result) {});
+      jsonRpcClient.rpc.emit('foobar', function(err, result) {});
     });
   });
 });
