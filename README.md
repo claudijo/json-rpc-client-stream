@@ -14,11 +14,11 @@ possible to use JSON RPC 2.0 in a peer-to-peer fashion.
 ### Using JSON RPC 2.0 in a Peer-to-peer Fashion
 
 A server and client pair must be installed on each node in order to use JSON RPC
-2.0 in a peer-to-peer fashion. Additionally, a full-duplex communication between
+2.0 in a peer-to-peer fashion. Additionally, full-duplex communication between
 node endpoint is required, for instance using
 [WebSockets](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API).
-The problem with such a setup is to separate incoming requests from incoming
-responses.
+The question then is, how to separate incoming requests from incoming
+responses?
 
 This problem could be handled by the protocol implementation, since it is quite
 straight forward to separate well-formed requests from well-formed responses.
@@ -43,14 +43,14 @@ npm install json-rpc-client-stream
 
 ## Usage
 
-Create a streaming JSON RPC client and emit requests (and notifications).
+Create a JSON RPC client stream and emit requests or notifications.
 
 Do some stream plumbing, such as: Readable connection stream -> RPC client ->
 Writable connection stream.
 
-As mentioned above, it is also recommended to pipe the streaming JSON RPC 2.0
-server and client through a mux/demux before piping it to a channel stream if
-using JSON RPC 2.0 in a peer-to-peer fashion.
+As mentioned above, it is recommended to pipe the streaming JSON RPC 2.0 server
+and client through a mux/demux before piping it to a channel stream if using
+JSON RPC 2.0 in a peer-to-peer fashion.
 
 ### jsonRpcClientStream()
 
@@ -58,10 +58,10 @@ The module exports a factory function that returns a JSON RPC client stream
 instance, which is a
 [duplex stream](https://nodejs.org/api/stream.html#stream_class_stream_duplex).
 
-### jsonRpcClientStreamInstance.rpc.emit(method[, parameters][, responseCallback])
+### jsonRpcClientStreamInstance.rpc.emit(method[, parameters][, callback])
 
-Emit an RPC method with optional parameters argument. If the RPC expects a
-response (i.e a request) pass in a responseCallback. The callback will be called
+Emit an RPC `method` with an optional `parameters` argument. If the RPC expects a
+response (i.e a request) pass in a response `callback`. The callback will be called
 with an `error` argument and a `result` argument. If the response callback is
 omitted, the RPC does not expect an response (i.e a notification).
 
@@ -71,13 +71,14 @@ request, where all the requests are sent at the same time.
 
 ## Basic Example
 
-The follwing example shows the basic use cases for a JSON RPC 2.0 Client.
+The following example shows the basic use cases for a JSON RPC 2.0 Client.
 
 ```js
 var jsonRpcClientStream = require('json-rpc-client-stream');
 
 // A request
-jsonRpcClientStream.rpc.emit('divide', { denominator: 2, numerator: 4 }, function(err, result) {
+jsonRpcClientStream.rpc.emit('divide', { denominator: 2, numerator: 4 },
+    function(err, result) {
   if (err) return console.error(err);
 
   console.log(result);
