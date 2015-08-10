@@ -103,12 +103,11 @@ var connectionStream = require('websocket-connection-stream')().attach(ws);
 
 var jsonRpcServerStream = require('json-rpc-server-stream')();
 var jsonRpcClientStream = require('json-rpc-client-stream')();
+var mux = require('mux-demux-stream');
 
-// Multiplex outgoing client requests and outgoing server responses.
-mux([jsonRpcServerStream, jsonRpcClientStream], websocketConnectionStream);
-
-// Demultiplex incoming server requests and incoming client responses
-demux(websocketConnectionStream, [jsonRpcServerStream, jsonRpcClientStream]);
+mux(jsonRpcServerStream, jsonRpcClientStream)
+  .pipe(websocketConnectionStream)
+  .demux(jsonRpcServerStream, jsonRpcClientStream);
 
 jsonRpcClientStream.rpc.emit('join', { roomId: 'roomA'}, function(err, result) {
   if (err) return console.error(err)
