@@ -4,6 +4,18 @@ JSON RPC 2.0 client implementation with streaming I/O and event driven API for
 endpoint implementers. For corresponding server implementation see
 [json-rpc-server-stream](https://github.com/claudijo/json-rpc-server-stream).
 
+## Line-delimited JSON
+Several individual incoming JSON encoded request responses or batch responses
+are expected to be delimited with new line characters if sent in the same chunk.
+
+JSON encoded messages (notifications, requests, and batches) are streamed with 
+new line character `\n` as delimiter to the server, which enables sensible 
+server side parsing even if several JSON encoded notification or request objects 
+are streamed in the same chunk from the client. 
+
+For gereral info about new line encoded JSON, see 
+[http://jsonlines.org/](http://jsonlines.org/).
+
 ## JSON RPC 2.0 Architecture
 
 The [JSON RPC 2.0 protocol](http://www.jsonrpc.org/specification) uses a

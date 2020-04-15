@@ -27,7 +27,7 @@ module.exports = function(opts) {
     }
 
     outgoingRequestQueue = [];
-    stream.push(json);
+    stream.push(json + '\n');
   };
 
   var createRequest = function(method, params, fn) {
@@ -84,16 +84,20 @@ module.exports = function(opts) {
 
   stream._write = function(chunk, encoding, callback) {
     var data;
-    try {
-      data = JSON.parse(chunk);
-    } catch (err) {
-      stream.emit('error', err);
-    }
+    var chunkParts = chunk.toString().split('\n');
 
-    if (Array.isArray(data)) {
-      data.forEach(handleResponse);
-    } else {
-      handleResponse(data);
+    for (var i = 0; i < chunkParts.length; i++) {
+      try {
+        data = JSON.parse(chunkParts[i]);
+      } catch (err) {
+        stream.emit('error', err);
+      }
+
+      if (Array.isArray(data)) {
+        data.forEach(handleResponse);
+      } else {
+        handleResponse(data);
+      }
     }
 
     callback();

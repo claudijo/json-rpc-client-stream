@@ -58,6 +58,16 @@ describe('JSON RPC 2.0 client stream', function() {
       jsonRpcClient.rpc.emit('update', [1, 2, 3, 4, 5]);
     });
 
+    it('should stream notification as new line delimited json', function(done) {
+      duplex._write = function(chunk, encoding, callback) {
+        expect(chunk.toString()).to.be('{"jsonrpc":"2.0","method":"update","params":[1,2,3,4,5]}\n')
+
+        done();
+      };
+
+      jsonRpcClient.rpc.emit('update', [1, 2, 3, 4, 5]);
+    });
+
     it('should stream request without params', function(done) {
       duplex._write = function(chunk, encoding, callback) {
         expect(JSON.parse(chunk)).to.eql({
@@ -65,6 +75,16 @@ describe('JSON RPC 2.0 client stream', function() {
           method: 'foobar',
           id: 1
         });
+
+        done();
+      };
+
+      jsonRpcClient.rpc.emit('foobar', function(err, result) {});
+    });
+
+    it('should stream request as new line delimited json', function(done) {
+      duplex._write = function(chunk, encoding, callback) {
+        expect(chunk.toString()).to.be('{"jsonrpc":"2.0","id":1,"method":"foobar"}\n')
 
         done();
       };
@@ -93,6 +113,16 @@ describe('JSON RPC 2.0 client stream', function() {
       jsonRpcClient.rpc.emit('bar', function(err, result) {});
     });
 
+    it('should stream batch as new line delimited json', function(done) {
+      duplex._write = function(chunk, encoding, callback) {
+        expect(chunk.toString()).to.be('[{"jsonrpc":"2.0","id":1,"method":"foo"},{"jsonrpc":"2.0","id":2,"method":"bar"}]\n');
+        done();
+      };
+
+      jsonRpcClient.rpc.emit('foo', function(err, result) {});
+      jsonRpcClient.rpc.emit('bar', function(err, result) {});
+    });
+
     it('should invoke callback with result on valid request with params', function(done) {
       duplex._write = function(chunk, encoding, callback) {
         duplex.push('{"jsonrpc": "2.0", "result": 3, "id": 1}');
@@ -103,6 +133,39 @@ describe('JSON RPC 2.0 client stream', function() {
         expect(result).to.be(3);
         done();
       });
+    });
+
+    it('should handle multiple responses sent in the same chunk separated by new line character', function(done) {
+      var callCount = 0;
+
+      duplex._write = function(chunk, encoding, callback) {
+        callCount += 1;
+
+        if (callCount === 1) {
+          return callback();
+        }
+
+        if (callCount === 2) {
+          duplex.push('{"jsonrpc": "2.0", "result": 3, "id": 1}\n{"jsonrpc": "2.0", "result": -1, "id": 2}');
+          return callback();
+        }
+      };
+
+      jsonRpcClient.rpc.emit('add', [1, 2], function(err, result) {
+        expect(err).to.be(null);
+        expect(result).to.be(3);
+      });
+
+      // Emit second request in next tick, to ensure we don't expect a batch
+      // response
+      process.nextTick(function() {
+        jsonRpcClient.rpc.emit('subtract', [1, 2], function(err, result) {
+          expect(err).to.be(null);
+          expect(result).to.be(-1);
+          done();
+        });
+      });
+
     });
 
     it('should invoke callback with result on valid request without params', function(done) {
