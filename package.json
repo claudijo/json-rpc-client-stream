@@ -1,6 +1,6 @@
 {
   "name": "json-rpc-client-stream",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "JSON RPC 2.0 client implementation with streaming I/O and event driven API for endpoint implementors.",
   "main": "index.js",
   "directories": {
